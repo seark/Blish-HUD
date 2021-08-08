@@ -28,7 +28,8 @@ namespace Blish_HUD.Controls {
         private static readonly Texture2D _textureWindowResizableCorner;
         private static readonly Texture2D _textureWindowResizableCornerActive;
 
-        private static readonly SettingCollection _windowSettings;
+        private static readonly ISettingCollection _windowSettings;
+        private ISettingEntry<Point> _windowLocation;
 
         static WindowBase() {
             _textureTitleBarLeft = Content.GetTexture("titlebar-inactive");
@@ -290,7 +291,8 @@ namespace Blish_HUD.Controls {
             if (this.Visible && this.Dragging) {
                 // Save position for next launch
                 if (this.SavesPosition && this.Id != null) {
-                    (_windowSettings[this.Id] as SettingEntry<Point> ?? _windowSettings.DefineSetting(this.Id, this.Location)).Value = this.Location;
+                    _windowLocation ??= _windowSettings.DefineSetting(this.Id, this.Location);
+                    _windowLocation.Value = this.Location;
                 }
 
                 Dragging = false;
@@ -337,8 +339,8 @@ namespace Blish_HUD.Controls {
 
             // Restore position from previous session
             if (this.SavesPosition && this.Id != null) {
-                if (_windowSettings.TryGetSetting(this.Id, out var windowPosition)) {
-                    this.Location = (windowPosition as SettingEntry<Point> ?? new SettingEntry<Point>()).Value;
+                if (_windowSettings.TryGetSetting<Point>(this.Id, out var windowPosition)) {
+                    this.Location = windowPosition.Value;
                 }
             }
 
